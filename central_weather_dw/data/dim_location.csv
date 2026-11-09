@@ -1,0 +1,12 @@
+location_key,city_name,region,sub_region,latitude,longitude,elevation_m,major_river_basin,terrain_type,vulnerability_level
+1,Thanh Hóa,Miền Trung,Bắc Trung Bộ,19.8067,105.7852,9,Sông Mã,Đồng bằng ven biển & Miền núi,Cao
+2,Nghệ An,Miền Trung,Bắc Trung Bộ,18.6734,105.6813,12,Sông Cả - Sông Lam,Đồng bằng ven biển & Vùng núi cao,Rất cao
+3,Hà Tĩnh,Miền Trung,Bắc Trung Bộ,18.3560,105.9059,6,Sông Ngàn Sâu - Sông Ngàn Phố,Vùng trũng thấp & Ven biển,Đặc biệt cao
+4,Quảng Trị,Miền Trung,Bắc Trung Bộ,16.7500,107.1856,15,Sông Thạch Hãn - Sông Bến Hải,Đồng bằng hẹp & Sườn đông Trường Sơn,Rất cao
+5,Huế,Miền Trung,Bắc Trung Bộ,16.4637,107.5909,10,Sông Hương - Sông Bồ,Đô thị di sản ven sông & Đầm phá,Đặc biệt cao
+6,Đà Nẵng,Miền Trung,Duyên hải Nam Trung Bộ,16.0544,108.2022,8,Sông Vu Gia - Thu Bồn,Đô thị ven biển & Cửa sông,Rất cao
+7,Quảng Ngãi,Miền Trung,Duyên hải Nam Trung Bộ,15.1205,108.7923,14,Sông Trà Khúc - Sông Vệ,Đồng bằng ven biển & Bờ biển hở,Rất cao
+8,Gia Lai,Miền Trung,Tây Nguyên - Miền Trung,13.9833,108.0000,750,Sông Ba (Thượng nguồn),Cao nguyên dốc & Đầu nguồn lũ,Cao
+9,Đắk Lắk,Miền Trung,Tây Nguyên - Miền Trung,12.6667,108.0500,500,Sông Srepok - Sông Ba,Cao nguyên lượn sóng,Trung bình
+10,Khánh Hòa,Miền Trung,Duyên hải Nam Trung Bộ,12.2388,109.1967,11,Sông Cái Nha Trang,Vịnh kín & Duyên hải hẹp,Cao
+11,Lâm Đồng,Miền Trung,Tây Nguyên - Miền Trung,11.9404,108.4583,1500,Sông Đồng Nai (Thượng nguồn),Núi cao & Đèo dốc sạt lở,Cao

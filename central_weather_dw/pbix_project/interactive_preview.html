@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI Preview - Central Vietnam Weather & Disaster DW</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --pbi-bg: #f3f2f1;
+            --pbi-header: #2b579a;
+            --pbi-card-bg: #ffffff;
+            --pbi-text: #252423;
+            --pbi-text-muted: #605e5c;
+            --pbi-border: #edebe9;
+            --pbi-blue: #0078d4;
+            --pbi-orange: #d83b01;
+            --pbi-green: #107c41;
+            --pbi-red: #a80000;
+            --pbi-shadow: 0 1.6px 3.6px 0 rgba(0,0,0,0.132), 0 0.3px 0.9px 0 rgba(0,0,0,0.108);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--pbi-bg);
+            color: var(--pbi-text);
+            padding-bottom: 40px;
+        }
+
+        /* Power BI Ribbon Header */
+        header {
+            background-color: var(--pbi-header);
+            color: white;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .header-title p {
+            font-size: 12px;
+            color: #d2e3fc;
+            margin-top: 2px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background-color: #ffffff;
+            border-bottom: 2px solid #e1dfdd;
+            padding: 0 24px;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--pbi-text-muted);
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--pbi-blue);
+            background-color: #f8f9fa;
+        }
+
+        .tab-btn.active {
+            color: var(--pbi-blue);
+            border-bottom-color: var(--pbi-blue);
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* Filter Slicer Panel */
+        .slicer-panel {
+            background-color: var(--pbi-card-bg);
+            padding: 14px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: var(--pbi-shadow);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .slicer-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slicer-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--pbi-text-muted);
+            text-transform: uppercase;
+        }
+
+        .slicer-group select {
+            padding: 6px 12px;
+            font-size: 13px;
+            border: 1px solid #c8c6c4;
+            border-radius: 4px;
+            background-color: white;
+            color: var(--pbi-text);
+            outline: none;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .kpi-card {
+            background: var(--pbi-card-bg);
+            padding: 16px 20px;
+            border-radius: 6px;
+            box-shadow: var(--pbi-shadow);
+            border-left: 4px solid var(--pbi-blue);
+            transition: transform 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .kpi-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--pbi-text-muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .kpi-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--pbi-text);
+        }
+
+        .kpi-sub {
+            font-size: 11px;
+            color: #8a8886;
+            margin-top: 4px;
+        }
+
+        /* Dashboard Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-grid.triple {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .dashboard-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        .visual-card {
+            background: var(--pbi-card-bg);
+            padding: 18px;
+            border-radius: 6px;
+            box-shadow: var(--pbi-shadow);
+        }
+
+        .visual-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: var(--pbi-text);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 320px;
+            width: 100%;
+        }
+
+        /* Prescriptive / Alert Boxes */
+        .alert-card {
+            padding: 14px 18px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .alert-red {
+            background-color: #fde7e9;
+            border-left: 4px solid var(--pbi-red);
+        }
+
+        .alert-orange {
+            background-color: #fff4ce;
+            border-left: 4px solid #ffaa44;
+        }
+
+        .alert-green {
+            background-color: #dff6dd;
+            border-left: 4px solid var(--pbi-green);
+        }
+
+        .alert-icon {
+            font-size: 22px;
+        }
+
+        .alert-body h4 {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .alert-body p {
+            font-size: 12px;
+            line-height: 1.5;
+            color: #323130;
+        }
+
+        /* Table styles */
+        .pbi-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .pbi-table th {
+            background-color: #f3f2f1;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e1dfdd;
+        }
+
+        .pbi-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #edebe9;
+        }
+
+        .badge-flood {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            background-color: var(--pbi-red);
+        }
+
+        .badge-warning {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            background-color: #ffaa44;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Ribbon -->
+    <header>
+        <div class="header-title">
+            <h1>🌧️ CENTRAL VIETNAM WEATHER & NATURAL DISASTER DATA WAREHOUSE (1999 - 2026)</h1>
+            <p>Mô hình Fact Constellation (Galaxy Schema) | 11 Tỉnh/Thành Miền Trung | Phân tích Bão Lũ & Khuyến Nghị Sinh Kế</p>
+        </div>
+        <div>
+            <span style="font-size: 12px; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 4px;">Power BI Desktop Preview</span>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('page1')">Trang 1: Tổng Quan Khí Hậu & Bão Lũ</button>
+        <button class="tab-btn" onclick="switchTab('page2')">Trang 2: Phân Tích Thiên Tai Lịch Sử 1999 - 2026</button>
+        <button class="tab-btn" onclick="switchTab('page3')">Trang 3: Cảnh Báo Sớm & Hỗ Trợ Sinh Kế</button>
+    </nav>
+
+    <div class="container">
+
+        <!-- ================= PAGE 1 ================= -->
+        <div id="page1" class="tab-content active">
+            <!-- Slicers -->
+            <div class="slicer-panel">
+                <div class="slicer-group">
+                    <label>Tỉnh / Thành Phố:</label>
+                    <select id="slicerCity" onchange="updatePage1()">
+                        <option value="ALL">Toàn Bộ 11 Tỉnh Thành</option>
+                        <option value="HUE">Thành phố Huế (Rốn Lũ 1999)</option>
+                        <option value="DANANG">Thành phố Đà Nẵng</option>
+                        <option value="HATINH">Hà Tĩnh (Lưu vực Kẻ Gỗ)</option>
+                        <option value="QUANGTRI">Quảng Trị (Thạch Hãn)</option>
+                        <option value="QUANGNGAI">Quảng Ngãi (Trà Khúc)</option>
+                    </select>
+                </div>
+                <div class="slicer-group">
+                    <label>Giai Đoạn Năm:</label>
+                    <select id="slicerYear">
+                        <option value="ALL">1999 - 2026 (Toàn dải lịch sử)</option>
+                        <option value="1999">Năm 1999 (Đại hồng thủy thế kỷ)</option>
+                        <option value="2020">Năm 2020 (Đại lũ kép lịch sử)</option>
+                        <option value="2022">Năm 2022 (Ngập lụt cực đoan đô thị)</option>
+                        <option value="2026">Năm 2026 (Đợt bão lũ hiện nay)</option>
+                    </select>
+                </div>
+                <div class="slicer-group">
+                    <label>Mùa Khí Hậu:</label>
+                    <select id="slicerSeason">
+                        <option value="ALL">Tất Cả Các Mùa</option>
+                        <option value="MUA_LU">Mùa Mưa Lũ (Tháng 8 - 11)</option>
+                        <option value="KHO_NONG">Mùa Khô Nóng Phơn (Tháng 5 - 7)</option>
+                        <option value="DONG_XUAN">Mùa Vụ Đông Xuân (Tháng 12 - 4)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Top Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-title">Nhiệt Độ Trung Bình</div>
+                    <div class="kpi-value" id="kpiTemp">25.6 °C</div>
+                    <div class="kpi-sub">Biên độ: 14.5°C - 41.8°C</div>
+                </div>
+                <div class="kpi-card" style="border-left-color: #0078d4;">
+                    <div class="kpi-title">Lượng Mưa Tích Lũy</div>
+                    <div class="kpi-value" id="kpiRain">15,480 mm</div>
+                    <div class="kpi-sub">Đỉnh 24h: 970 mm (Huế 1999)</div>
+                </div>
+                <div class="kpi-card" style="border-left-color: #ffaa44;">
+                    <div class="kpi-title">Tốc Độ Gió Trung Bình</div>
+                    <div class="kpi-value" id="kpiWind">15.2 m/s</div>
+                    <div class="kpi-sub">Gió giật đỉnh: 45.5 m/s (Cấp 14)</div>
+                </div>
+                <div class="kpi-card" style="border-left-color: #a80000;">
+                    <div class="kpi-title">Sự Kiện Cực Đoan</div>
+                    <div class="kpi-value" id="kpiEvents">24 Sự Kiện</div>
+                    <div class="kpi-sub">Bão mạnh, Lũ vượt lịch sử, Sạt lở</div>
+                </div>
+                <div class="kpi-card" style="border-left-color: #107c41;">
+                    <div class="kpi-title">Cán Cân Tài Nguyên Nước</div>
+                    <div class="kpi-value" id="kpiWater">+218.4 mm</div>
+                    <div class="kpi-sub">>0: Thừa nước (Nguy cơ ngập)</div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="dashboard-grid">
+                <div class="visual-card">
+                    <h3>Xu Hướng Lượng Mưa (mm) & Nhiệt Độ (°C) Qua Các Mốc Lịch Sử <span>Line & Clustered Column</span></h3>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="visual-card">
+                    <h3>Hoa Gió Miền Trung (Tần Suất & Tốc Độ) <span>Radar Chart</span></h3>
+                    <div class="chart-container">
+                        <canvas id="windRadarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="visual-card">
+                    <h3>Xếp Hạng Lượng Mưa Tích Lũy 11 Tỉnh/Thành Miền Trung (mm) <span>Bar Chart</span></h3>
+                    <div class="chart-container">
+                        <canvas id="provinceRainChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="visual-card">
+                    <h3>Tương Quan Nhiệt Độ Không Khí (2m) vs Nhiệt Độ Đất (0cm) <span>Line Chart</span></h3>
+                    <div class="chart-container">
+                        <canvas id="soilTempChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= PAGE 2 ================= -->
+        <div id="page2" class="tab-content">
+            <div class="kpi-grid">
+                <div class="kpi-card" style="border-left-color: #a80000;">
+                    <div class="kpi-title">Tổng Thiệt Hại Kinh Tế</div>
+                    <div class="kpi-value">97,850 Tỷ VNĐ</div>
+                    <div class="kpi-sub">Số liệu tổng hợp qua các đợt thiên tai</div>
+                </div>
+                <div class="kpi-card" style="border-left-color: #d83b01;">
+                    <div class="kpi-title">Số Dân Bị Ảnh Hưởng</div>
+                    <div class="kpi-value">12.8 Triệu Lượt</div>
+                    <div class="kpi-sub">Đồng bào miền Trung trong các trận bão lũ</div>
+                </div>
+                <div class="kpi-card" style="border-left-color: #0078d4;">
+                    <div class="kpi-title">Kỷ Lục Mưa 24 Giờ</div>
+                    <div class="kpi-value">970 mm</div>
+                    <div class="kpi-sub">Trận Đại hồng thủy 02/11/1999 (Huế)</div>
+                </div>
+                <div class="kpi-card" style="border-left-color: #605e5c;">
+                    <div class="kpi-title">Ngập Lụt Đô Thị Kỷ Lục</div>
+                    <div class="kpi-value">1.5 - 2.0 m</div>
+                    <div class="kpi-sub">Đà Nẵng trong đêm 14/10/2022</div>
+                </div>
+            </div>
+
+            <div class="visual-card" style="margin-bottom: 20px;">
+                <h3>Ma Trận Các Trận Thiên Tai Lớn Nhất Miền Trung (1999 - 2026)</h3>
+                <div style="overflow-x: auto;">
+                    <table class="pbi-table">
+                        <thead>
+                            <tr>
+                                <th>Thời Gian</th>
+                                <th>Địa Bàn</th>
+                                <th>Tên Sự Kiện Thiên Tai</th>
+                                <th>Phân Loại</th>
+                                <th>Mưa Đỉnh 24h</th>
+                                <th>Mức Báo Động Lũ</th>
+                                <th>Tốc Độ Gió</th>
+                                <th>Thiệt Hại (Tỷ VNĐ)</th>
+                                <th>Người Ảnh Hưởng</th>
+                                <th>Biện Pháp Ứng Phó Khẩn Cấp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>02/11/1999</td>
+                                <td><b>TP. Huế</b></td>
+                                <td>Đại hồng thủy miền Trung 1999</td>
+                                <td>Lũ lụt thế kỷ</td>
+                                <td><b>970 mm</b></td>
+                                <td><span class="badge-flood">Vượt lịch sử (+1.2m)</span></td>
+                                <td>85 km/h</td>
+                                <td>3,800</td>
+                                <td>1,200,000</td>
+                                <td>Cứu hộ đường thủy & đường hàng không thả hàng cứu trợ</td>
+                            </tr>
+                            <tr>
+                                <td>01/10/2006</td>
+                                <td><b>TP. Đà Nẵng</b></td>
+                                <td>Bão số 6 (Xangsane 2006)</td>
+                                <td>Siêu bão nhiệt đới</td>
+                                <td>420 mm</td>
+                                <td><span class="badge-warning">Báo động 2</span></td>
+                                <td><b>160 km/h</b></td>
+                                <td>5,300</td>
+                                <td>900,000</td>
+                                <td>Sơ tán 200.000 dân đô thị, giới nghiêm toàn thành phố</td>
+                            </tr>
+                            <tr>
+                                <td>08/10/2020</td>
+                                <td><b>Quảng Trị</b></td>
+                                <td>Đại lũ kép tháng 10/2020</td>
+                                <td>Lũ chồng lũ</td>
+                                <td><b>850 mm</b></td>
+                                <td><span class="badge-flood">Vượt lịch sử (+0.8m)</span></td>
+                                <td>65 km/h</td>
+                                <td>4,500</td>
+                                <td>550,000</td>
+                                <td>Phá bờ tràn đê, di dời người dân trong đêm nước dâng</td>
+                            </tr>
+                            <tr>
+                                <td>18/10/2020</td>
+                                <td><b>Hà Tĩnh</b></td>
+                                <td>Mưa lũ lịch sử Kẻ Gỗ 2020</td>
+                                <td>Ngập lụt sâu diện rộng</td>
+                                <td><b>800 mm</b></td>
+                                <td><span class="badge-flood">Trên BĐ3</span></td>
+                                <td>60 km/h</td>
+                                <td>5,500</td>
+                                <td>620,000</td>
+                                <td>Hồ Kẻ Gỗ xả tràn kỷ lục, sơ tán khẩn 45.000 dân Cẩm Xuyên</td>
+                            </tr>
+                            <tr>
+                                <td>14/10/2022</td>
+                                <td><b>TP. Đà Nẵng</b></td>
+                                <td>Ngập lụt đô thị lịch sử 2022</td>
+                                <td>Mưa cực đoan đô thị</td>
+                                <td><b>795 mm</b></td>
+                                <td><span class="badge-flood">Vượt kỷ lục ngập 2m</span></td>
+                                <td>75 km/h</td>
+                                <td>4,400</td>
+                                <td>750,000</td>
+                                <td>Huy động xe lội nước quân đội cứu người dân trong đêm</td>
+                            </tr>
+                            <tr>
+                                <td>09/11/2026</td>
+                                <td><b>TP. Huế - Đà Nẵng</b></td>
+                                <td>Mưa lũ đặc biệt lớn hiện tại</td>
+                                <td>Không khí lạnh + Gió Đông</td>
+                                <td><b>550 mm</b></td>
+                                <td><span class="badge-flood">Trên BĐ2 - Đang lên</span></td>
+                                <td>70 km/h</td>
+                                <td>1,400</td>
+                                <td>290,000</td>
+                                <td>Công điện khẩn Thủ tướng, lệnh điều tiết liên hồ chứa Tả Trạch</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= PAGE 3 ================= -->
+        <div id="page3" class="tab-content">
+            <!-- Alert Status Section -->
+            <div class="kpi-grid">
+                <div class="kpi-card" style="border-left-color: #a80000;">
+                    <div class="kpi-title">Cảnh Báo Lũ Lưu Vực Sông</div>
+                    <div class="kpi-value" style="font-size: 18px; color: #a80000;">🚨 Báo Động 3 (Khẩn Cấp)</div>
+                    <div class="kpi-sub">Sông Hương, Sông Bồ, Sông Vu Gia - Thu Bồn</div>
+                </div>
+                <div class="kpi-card" style="border-left-color: #ffaa44;">
+                    <div class="kpi-title">Nguy Cơ Sạt Lở Đất</div>
+                    <div class="kpi-value" style="font-size: 18px; color: #d83b01;">🟠 Nguy Cơ RẤT CAO</div>
+                    <div class="kpi-sub">Độ bão hòa đất đạt 98%, sườn dốc ngậm no nước</div>
+                </div>
+                <div class="kpi-card" style="border-left-color: #a80000;">
+                    <div class="kpi-title">An Toàn Cho Ngư Dân</div>
+                    <div class="kpi-value" style="font-size: 18px; color: #a80000;">⛔ CẤM BIỂN TUYỆT ĐỐI</div>
+                    <div class="kpi-sub">Gió Đông Bắc giật cấp 8-9, sóng cao 3.0 - 5.0m</div>
+                </div>
+            </div>
+
+            <!-- Prescriptive Guidance Cards -->
+            <div class="dashboard-grid">
+                <div class="visual-card">
+                    <h3>🌾 Khuyến Nghị Mùa Vụ Nông Nghiệp Tránh Lũ</h3>
+                    <div class="alert-card alert-orange">
+                        <div class="alert-icon">⚠️</div>
+                        <div class="alert-body">
+                            <h4>Cao điểm bão lũ Miền Trung (Tháng 9, 10, 11)</h4>
+                            <p>Bắt buộc hoàn thành thu hoạch dứt điểm vụ Hè Thu trước ngày 31/08. <b>Tuyệt đối không gieo cấy lúa</b> trên các bãi bồi, vùng trũng ven sông Hương, sông Thạch Hãn, sông Vu Gia. Chuyển gia súc, gia cầm lên đồi cao an toàn.</p>
+                        </div>
+                    </div>
+
+                    <div class="alert-card alert-green">
+                        <div class="alert-icon">🌱</div>
+                        <div class="alert-body">
+                            <h4>Xuống giống vụ Đông Xuân (Tháng 12 - Tháng 1)</h4>
+                            <p>Tận dụng lớp phù sa màu mỡ sau khi nước lũ rút. Chọn các giống lúa ngắn ngày chịu rét, có khả năng chống đổ ngã. Khơi thông hệ thống kênh mương tiêu úng nội đồng.</p>
+                        </div>
+                    </div>
+
+                    <div class="alert-card alert-orange">
+                        <div class="alert-icon">☀️</div>
+                        <div class="alert-body">
+                            <h4>Mùa gió phơn Tây Nam khô hạn (Tháng 5 - Tháng 7)</h4>
+                            <p>Độ ẩm đất giảm sâu dưới 15%, nhiệt độ vượt 40°C. Cần chủ động chuyển đổi cơ cấu cây trồng sang ngô, đậu phộng chịu hạn; tưới nước tiết kiệm và phòng chống cháy rừng.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="visual-card">
+                    <h3>🏗️ Khuyến Nghị Thi Công Xây Dựng & Thủy Điện</h3>
+                    <div class="alert-card alert-red">
+                        <div class="alert-icon">⛔</div>
+                        <div class="alert-body">
+                            <h4>Đình chỉ thi công công trình ven sông, đèo dốc</h4>
+                            <p>Khi lượng mưa ngày > 100mm hoặc gió > cấp 7: Lập tức dừng mọi công tác đào móng sâu, giàn giáo cao tầng và nạo vét lòng sông. Cắt điện các trạm biến áp trũng thấp.</p>
+                        </div>
+                    </div>
+
+                    <div class="alert-card alert-green">
+                        <div class="alert-icon">🌊</div>
+                        <div class="alert-body">
+                            <h4>Vận hành liên hồ chứa cắt lũ hạ du</h4>
+                            <p>Chủ động xả đáy đón lũ trước khi đỉnh mưa xuất hiện 24h theo đúng quy trình liên hồ chứa (Tả Trạch, A Vương, Sông Tranh 2, Kẻ Gỗ). Giữ dung tích phòng lũ an toàn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Chart Script -->
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Render Page 1 Charts
+        window.onload = function() {
+            // Trend Chart
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            new Chart(ctxTrend, {
+                type: 'bar',
+                data: {
+                    labels: ['1999 (Lũ TK)', '2006 (Bão Xangsane)', '2013 (Lũ lịch sử)', '2017 (Bão Doksuri)', '2020 (Lũ kép)', '2022 (Ngập ĐN)', '2024 (Trami)', '2026 (Hiện tại)'],
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Lượng Mưa 24h Đỉnh (mm)',
+                            data: [970, 420, 620, 350, 920, 795, 710, 550],
+                            backgroundColor: 'rgba(0, 120, 212, 0.75)',
+                            borderColor: '#0078d4',
+                            borderWidth: 1,
+                            yAxisID: 'yRain'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Tốc Độ Gió Giật (km/h)',
+                            data: [85, 160, 65, 145, 150, 75, 115, 70],
+                            borderColor: '#d83b01',
+                            backgroundColor: '#d83b01',
+                            borderWidth: 3,
+                            fill: false,
+                            yAxisID: 'yWind'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        yRain: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Lượng mưa (mm)' }
+                        },
+                        yWind: {
+                            type: 'linear',
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: 'Tốc độ gió (km/h)' }
+                        }
+                    }
+                }
+            });
+
+            // Wind Radar Chart
+            const ctxWind = document.getElementById('windRadarChart').getContext('2d');
+            new Chart(ctxWind, {
+                type: 'radar',
+                data: {
+                    labels: ['Bắc (N)', 'Đông Bắc (NE)', 'Đông (E)', 'Đông Nam (SE)', 'Nam (S)', 'Tây Nam (SW)', 'Tây (W)', 'Tây Bắc (NW)'],
+                    datasets: [
+                        {
+                            label: 'Mùa Mưa Lũ (Gió Đông Bắc)',
+                            data: [15, 24, 18, 8, 4, 3, 2, 8],
+                            borderColor: '#0078d4',
+                            backgroundColor: 'rgba(0, 120, 212, 0.25)'
+                        },
+                        {
+                            label: 'Mùa Khô Nóng (Gió phơn Tây Nam)',
+                            data: [2, 3, 5, 8, 12, 22, 14, 4],
+                            borderColor: '#d83b01',
+                            backgroundColor: 'rgba(216, 59, 1, 0.25)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Province Rain Chart
+            const ctxProvince = document.getElementById('provinceRainChart').getContext('2d');
+            new Chart(ctxProvince, {
+                type: 'bar',
+                indexAxis: 'y',
+                data: {
+                    labels: ['Huế', 'Đà Nẵng', 'Quảng Trị', 'Hà Tĩnh', 'Quảng Ngãi', 'Nghệ An', 'Khánh Hòa', 'Thanh Hóa', 'Gia Lai', 'Lâm Đồng', 'Đắk Lắk'],
+                    datasets: [{
+                        label: 'Lượng Mưa Tích Lũy Bão Lũ (mm)',
+                        data: [3450, 3120, 2980, 2850, 2760, 2150, 1850, 1720, 1420, 1380, 1210],
+                        backgroundColor: 'rgba(0, 120, 212, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Soil vs Temp Chart
+            const ctxSoil = document.getElementById('soilTempChart').getContext('2d');
+            new Chart(ctxSoil, {
+                type: 'line',
+                data: {
+                    labels: ['T1', 'T2', 'T3', 'T4', 'T5 (Gió Lào)', 'T6', 'T7 (Nắng đỉnh)', 'T8', 'T9 (Bão sớm)', 'T10 (Cao điểm lũ)', 'T11 (Đại lũ)', 'T12'],
+                    datasets: [
+                        {
+                            label: 'Nhiệt Độ Không Khí 2m (°C)',
+                            data: [18.5, 21.0, 24.8, 29.5, 36.5, 38.2, 37.0, 31.5, 27.8, 25.0, 22.5, 19.8],
+                            borderColor: '#ffaa44',
+                            borderWidth: 2,
+                            fill: false
+                        },
+                        {
+                            label: 'Nhiệt Độ Lớp Đất Bề Mặt 0cm (°C)',
+                            data: [17.8, 20.2, 26.0, 32.5, 44.5, 47.8, 45.2, 35.0, 29.5, 25.8, 22.0, 19.0],
+                            borderColor: '#d83b01',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        };
+
+        function updatePage1() {
+            const city = document.getElementById('slicerCity').value;
+            if (city === 'HUE') {
+                document.getElementById('kpiTemp').innerText = '24.2 °C';
+                document.getElementById('kpiRain').innerText = '19,850 mm';
+                document.getElementById('kpiEvents').innerText = '18 Sự Kiện';
+            } else if (city === 'DANANG') {
+                document.getElementById('kpiTemp').innerText = '26.1 °C';
+                document.getElementById('kpiRain').innerText = '16,210 mm';
+                document.getElementById('kpiEvents').innerText = '14 Sự Kiện';
+            } else {
+                document.getElementById('kpiTemp').innerText = '25.6 °C';
+                document.getElementById('kpiRain').innerText = '15,480 mm';
+                document.getElementById('kpiEvents').innerText = '24 Sự Kiện';
+            }
+        }
+    </script>
+</body>
+</html>

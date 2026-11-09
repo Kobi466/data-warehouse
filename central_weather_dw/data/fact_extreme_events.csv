@@ -1,0 +1,25 @@
+event_key,date_key,location_key,event_name,event_type,peak_rainfall_24h_mm,flood_alarm_level,max_wind_speed_kmh,estimated_damage_billion_vnd,affected_population,response_action_taken
+1,19991102,5,Đại hồng thủy miền Trung 1999,Lũ lụt lịch sử thế kỷ,970,Vượt lịch sử (+1.2m trên BĐ3),85,3800,1200000,Cứu hộ đường thủy khẩn cấp, thả hàng cứu trợ đường hàng không
+2,19991102,6,Đại hồng thủy miền Trung 1999,Ngập lụt diện rộng,650,Trên BĐ3,75,1200,450000,Sơ tán 80.000 dân ven sông Cẩm Lệ và Hòa Vang
+3,19991103,4,Đại hồng thủy miền Trung 1999,Lũ lụt chia cắt,720,Trên BĐ3,70,950,320000,Cứu nạn vùng trũng Hải Lăng, Triệu Phong
+4,19991103,7,Đại hồng thủy miền Trung 1999,Lũ quét & Ngập lụt,680,Trên BĐ3,80,1100,500000,Di dời dân ven sông Trà Khúc và sông Vệ
+5,20061001,6,Bão số 6 (Xangsane 2006),Bão nhiệt đới cực mạnh,420,BĐ2,160,5300,900000,Sơ tán 200.000 dân đô thị, giới nghiêm toàn thành phố
+6,20061001,5,Bão Xangsane 2006,Bão kèm ngập lụt ven biển,380,Trên BĐ2,130,2100,400000,Chằng chống di tích Cố Đô, gia cố bờ bao đầm phá
+7,20131115,7,Lũ lụt lịch sử Quảng Ngãi 2013,Lũ quét do xả lũ & Mưa cực đoan,620,Vượt lịch sử,65,2200,350000,Cảnh báo xả lũ hồ chứa khẩn cấp
+8,20170915,3,Bão số 10 (Doksuri 2017),Bão đổ bộ cấp 12-13,350,BĐ2,145,7000,850000,Cắt điện an toàn, di dời hơn 100.000 người dân ven biển
+9,20171104,10,Bão số 12 (Damrey 2017),Bão đổ bộ Nam Trung Bộ,410,Trên BĐ2,135,13500,600000,Huy động lực lượng quân đội cứu trợ lồng bè nuôi trồng thủy sản
+10,20201008,4,Lũ kép lịch sử tháng 10/2020,Lũ chồng lũ kéo dài,850,Vượt lịch sử (+0.8m trên BĐ3),65,4500,550000,Phá bờ tràn cứu đê, di dời dân ban đêm
+11,20201008,5,Lũ lịch sử sông Hương 2020,Ngập lụt diện rộng,920,Trên BĐ3,70,3200,480000,Vận hành liên hồ chứa Tả Trạch - Bình Điền cắt lũ
+12,20201018,3,Mưa lũ lịch sử Hà Tĩnh 2020,Ngập lụt sâu vùng trũng,800,Trên BĐ3,60,5500,620000,Hồ Kẻ Gỗ xả lũ kỷ lục, sơ tán khẩn 45.000 dân Cẩm Xuyên
+13,20201019,2,Lũ lụt Nghệ An 2020,Ngập úng hạ lưu sông Cả,540,BĐ3,55,1800,310000,Vận hành đê bao Nam Đàn, cứu hộ vùng ngập sâu
+14,20201028,6,Bão số 9 (Molave 2020),Bão cuồng phong đổ bộ,460,BĐ2,150,10500,1100000,Sạt lở đất nghiêm trọng vùng núi, tìm kiếm cứu nạn khẩn cấp
+15,20201028,7,Bão số 9 (Molave 2020),Bão kèm sạt lở đồi núi,580,Trên BĐ3,145,8200,650000,Ứng cứu sạt lở vùng cao Trà Bồng, Ba Tơ
+16,20221014,6,Ngập lụt lịch sử Đà Nẵng 2022,Mưa cực đoan đô thị kỷ lục,795,Vượt lịch sử đô thị (ngập 1.5m - 2m),75,4400,750000,Huy động xe lội nước quân đội cứu người trong đêm ngập sâu
+17,20221014,5,Mưa lớn diện rộng Thừa Thiên Huế 2022,Ngập lụt các xã vùng trũng,680,Trên BĐ2,70,1600,280000,Cắt điện cục bộ các trạm biến áp ngập nước
+18,20240907,1,Ảnh hưởng bão số 3 (Yagi 2024),Mưa lớn hoàn lưu sau bão,380,BĐ2,90,1200,210000,Gia cố hệ thống đê điều sông Mã
+19,20241027,6,Bão số 6 (Trami 2024),Bão giật mạnh kết hợp triều cường,450,BĐ3,115,2100,430000,Bảo vệ bờ kè biển Mỹ Khê và ven sông Hàn
+20,20241027,5,Bão Trami & Lũ sông Hương 2024,Mưa đặc biệt lớn,710,Trên BĐ3,110,2900,380000,Vận hành xả lũ liên hồ chứa tránh ngập hạ du
+21,20261108,3,Mưa lũ diện rộng tháng 11/2026,Mưa lớn không khí lạnh tăng cường,350,BĐ2,65,750,180000,Họp khẩn ban chỉ huy PCTT, trực 24/24 tại các hồ chứa
+22,20261109,5,Mưa lũ cực đoan tháng 11/2026,Lũ dâng cao sông Hương - sông Bồ,550,Trên BĐ2,70,1400,290000,Lệnh điều tiết hồ Tả Trạch, rà soát sơ tán dân vùng trũng
+23,20261109,6,Mưa lớn đợt 11/2026,Nguy cơ ngập úng đô thị,420,BĐ2,60,900,240000,Khơi thông cửa thu nước, chủ động bơm chống ngập
+24,20261110,7,Đợt lũ tháng 11/2026,Lũ dâng sông Trà Khúc,480,BĐ2,65,850,220000,Cảnh báo sạt lở đồi dốc huyện Sơn Hà, Ba Tơ

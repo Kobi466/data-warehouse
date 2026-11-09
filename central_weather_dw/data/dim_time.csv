@@ -1,0 +1,25 @@
+time_key,hour_24,hour_12,am_pm,period_of_day,activity_window
+0,0,12,AM,Đêm,Giờ nghỉ ngơi / Trực ban bão lũ ban đêm
+1,1,1,AM,Đêm,Giờ nghỉ ngơi / Trực ban bão lũ ban đêm
+2,2,2,AM,Đêm,Giờ nghỉ ngơi / Nguy cơ lũ quét bất ngờ
+3,3,3,AM,Sáng sớm,Sáng sớm / Đỉnh lũ thường xuất hiện
+4,4,4,AM,Sáng sớm,Sáng sớm / Tàu cá chuẩn bị ra vào lạch
+5,5,5,AM,Sáng sớm,Sáng sớm / Tàu cá chuẩn bị ra vào lạch
+6,6,6,AM,Sáng,Giờ làm việc & Người dân bắt đầu sinh hoạt
+7,7,7,AM,Sáng,Giờ làm việc & Học sinh đến trường
+8,8,8,AM,Sáng,Giờ làm việc & Hoạt động sản xuất
+9,9,9,AM,Sáng,Giờ làm việc & Hoạt động sản xuất
+10,10,10,AM,Trưa,Nắng nóng bắt đầu gia tăng
+11,11,11,AM,Trưa,Nắng nóng đỉnh điểm giờ trưa
+12,12,12,PM,Trưa,Nắng nóng đỉnh điểm giờ trưa
+13,13,1,PM,Trưa,Bức xạ mặt trời cao nhất
+14,14,2,PM,Chiều,Nhiệt độ mặt đất cao nhất
+15,15,3,PM,Chiều,Giờ làm việc buổi chiều
+16,16,4,PM,Chiều,Dông nhiệt chiều mùa hè bắt đầu hình thành
+17,17,5,PM,Chiều,Giờ tan tầm & Triều cường chiều
+18,18,6,PM,Tối,Tối / Giờ sinh hoạt gia đình
+19,19,7,PM,Tối,Tối / Cập nhật bản tin thời tiết 19h
+20,20,8,PM,Tối,Tối / Họp ban chỉ huy phòng chống thiên tai
+21,21,9,PM,Tối,Đêm / Theo dõi diễn biến bão
+22,22,10,PM,Đêm,Đêm / Canh mực nước hồ chứa
+23,23,11,PM,Đêm,Đêm / Canh mực nước hồ chứa

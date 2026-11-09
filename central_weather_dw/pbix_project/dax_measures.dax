@@ -1,0 +1,196 @@
+/*
+================================================================================
+BỘ ĐO LƯỜNG DAX (DAX MEASURES) HOÀN CHỈNH CHO KHO DỮ LIỆU MIỀN TRUNG
+Dự án: Central Vietnam Weather & Disaster Data Warehouse (1999 - 2026)
+Mô hình: Fact Constellation (Galaxy Schema)
+================================================================================
+*/
+
+-- =============================================================================
+-- NHÓM 1: CÁC CHỈ SỐ KPI CHÍNH (CARD & SUMMARY METRICS)
+-- =============================================================================
+
+// 1. Nhiệt độ trung bình (°C)
+[Avg Temperature] =
+AVERAGE('fact_temperature'[temperature_2m])
+
+// 2. Nhiệt độ cao nhất ghi nhận (°C)
+[Max Temperature] =
+MAX('fact_temperature'[temperature_max])
+
+// 3. Nhiệt độ thấp nhất ghi nhận (°C)
+[Min Temperature] =
+MIN('fact_temperature'[temperature_min])
+
+// 4. Tổng lượng mưa tích lũy (mm)
+[Total Rain] =
+SUM('fact_precipitation'[rain_mm])
+
+// 5. Lượng mưa trung bình theo ngày (mm/ngày)
+[Avg Rain Daily] =
+AVERAGE('fact_precipitation'[rain_mm])
+
+// 6. Tốc độ gió trung bình (m/s)
+[Avg Wind Speed] =
+AVERAGE('fact_wind'[wind_speed_10m])
+
+// 7. Gió giật cực đại (m/s)
+[Max Wind Gust] =
+MAX('fact_wind'[wind_gusts_10m])
+
+// 8. Tổng số sự kiện thiên tai cực đoan
+[Extreme Events Count] =
+COUNTROWS('fact_extreme_events')
+
+// 9. Tổng thiệt hại kinh tế ước tính do thiên tai (Tỷ VNĐ)
+[Total Disaster Damage (Billion VND)] =
+SUM('fact_extreme_events'[estimated_damage_billion_vnd])
+
+// 10. Tổng số lượt người dân bị ảnh hưởng bởi thiên tai
+[Total Affected Population] =
+SUM('fact_extreme_events'[affected_population])
+
+
+-- =============================================================================
+-- NHÓM 2: PHÂN TÍCH KHÍ QUYỂN & TÀI NGUYÊN NƯỚC (ATMOSPHERIC & HYDROLOGY)
+-- =============================================================================
+
+// 11. Độ ẩm tương đối trung bình (%)
+[Avg Relative Humidity] =
+AVERAGE('fact_temperature'[relative_humidity_pct])
+
+// 12. Độ ẩm đất trung bình (m³/m³)
+[Avg Soil Moisture] =
+AVERAGE('fact_temperature'[soil_moisture])
+
+// 13. Độ bão hòa đất trung bình (%)
+[Avg Soil Saturation] =
+AVERAGE('fact_precipitation'[soil_saturation_pct])
+
+// 14. Tổng lượng bốc thoát hơi nước (mm)
+[Total Evapotranspiration] =
+SUM('fact_precipitation'[evapotranspiration])
+
+// 15. Cán cân nước trung bình (Water Balance = Rain - Evapotranspiration)
+// > 0: Thừa nước (nguy cơ ngập); = 0: Cân bằng; < 0: Thiếu nước (nguy cơ hạn hán)
+[Avg Water Balance] =
+AVERAGE('fact_precipitation'[water_balance])
+
+// 16. Độ che phủ mây trung bình (%)
+[Avg Cloud Cover] =
+AVERAGE('fact_atmospheric'[cloud_cover_pct])
+
+// 17. Độ che phủ mây tầng thấp (%)
+[Avg Cloud Low] =
+AVERAGE('fact_atmospheric'[cloud_low_pct])
+
+// 18. Độ che phủ mây tầng cao (%)
+[Avg Cloud High] =
+AVERAGE('fact_atmospheric'[cloud_high_pct])
+
+// 19. Áp suất khí quyển trung bình (hPa)
+[Avg Surface Pressure] =
+AVERAGE('fact_atmospheric'[surface_pressure_hpa])
+
+// 20. Bức xạ mặt trời trung bình (MJ/m²)
+[Avg Solar Radiation] =
+AVERAGE('fact_solar_radiation'[shortwave_radiation])
+
+
+-- =============================================================================
+-- NHÓM 3: CẢNH BÁO BÃO LŨ & THIÊN TAI CỰC ĐOAN (DISASTER EARLY WARNING)
+-- =============================================================================
+
+// 21. Cấp độ cảnh báo lũ (Dựa trên lượng mưa tích lũy và mực nước)
+[Flood Warning Level] =
+VAR TotalRain = [Total Rain]
+VAR SoilSat = [Avg Soil Saturation]
+RETURN
+    SWITCH(
+        TRUE(),
+        TotalRain >= 500 || SoilSat >= 98, "🚨 Báo động 3+ (Lũ đặc biệt lớn - Khẩn cấp)",
+        TotalRain >= 300 || SoilSat >= 90, "⚠️ Báo động 3 (Lũ lớn - Ngập sâu diện rộng)",
+        TotalRain >= 150 || SoilSat >= 75, "⚡ Báo động 2 (Lũ trung bình - Ngập vùng trũng)",
+        TotalRain >= 50, "📢 Báo động 1 (Lũ nhỏ - Bắt đầu tràn bãi)",
+        "✅ Bình thường (An toàn)"
+    )
+
+// 22. Cảnh báo sạt lở đất sườn dốc (Landslide Warning)
+// Kết hợp độ bão hòa đất (Soil Saturation) và lượng mưa tích lũy
+[Landslide Risk Level] =
+VAR Saturation = [Avg Soil Saturation]
+VAR RainDaily = [Avg Rain Daily]
+RETURN
+    SWITCH(
+        TRUE(),
+        Saturation >= 95 && RainDaily >= 200, "🔴 Nguy cơ sạt lở RẤT CAO (Sơ tán khẩn cấp)",
+        Saturation >= 85 && RainDaily >= 100, "🟠 Nguy cơ sạt lở CAO (Cảnh giác cao độ)",
+        Saturation >= 70 && RainDaily >= 50, "🟡 Nguy cơ sạt lở TRUNG BÌNH (Theo dõi sườn dốc)",
+        "🟢 Nguy cơ THẤP"
+    )
+
+// 23. Chỉ số an toàn biển cho tàu thuyền đánh bắt hải sản
+[Marine Safety Status] =
+VAR MaxWind = [Max Wind Gust]
+RETURN
+    SWITCH(
+        TRUE(),
+        MaxWind >= 32.7, "⛔ CẤM BIỂN TUYỆT ĐỐI (Gió cấp 12+ cuồng phong)",
+        MaxWind >= 24.5, "⛔ CẤM TÀU THUYỀN RA KHƠI (Gió cấp 10-11 bão mạnh)",
+        MaxWind >= 17.2, "⚠️ NGUY HIỂM (Gió cấp 8-9, biển động rất mạnh)",
+        MaxWind >= 10.8, "⚡ CẢNH GIÁC (Gió cấp 6-7, biển động, tàu nhỏ ở lại bến)",
+        "✅ AN TOÀN (Tàu thuyền hoạt động bình thường)"
+    )
+
+
+-- =============================================================================
+-- NHÓM 4: KHUYẾN NGHỊ SINH KẾ NGƯỜI DÂN MIỀN TRUNG (PRESCRIPTIVE ANALYTICS)
+-- =============================================================================
+
+// 24. Khuyến nghị thời vụ nông nghiệp theo tháng và rủi ro ngập lụt
+[Crop Recommendation] =
+VAR CurrentMonth = SELECTEDVALUE('dim_date'[month], 11)
+VAR WaterBal = [Avg Water Balance]
+VAR SoilMoist = [Avg Soil Moisture]
+RETURN
+    SWITCH(
+        TRUE(),
+        CurrentMonth IN {9, 10, 11},
+            "⚠️ Cao điểm bão lũ: Thu hoạch dứt điểm vụ Hè Thu, KHÔNG gieo cấy lúa vùng trũng thấp ven sông, chuyển sang chăn thả gia súc lên đồi cao.",
+        CurrentMonth IN {12, 1},
+            "🌱 Xuống giống vụ Đông Xuân: Tranh thủ phù sa sau lũ, gieo cấy giống lúa ngắn ngày chịu rét, kiểm tra hệ thống tiêu úng nội đồng.",
+        CurrentMonth IN {2, 3, 4},
+            "🌾 Chăm sóc lúa Đông Xuân: Bón đón đòng, thời tiết ấm dần, điều tiết nước tưới dưỡng hạt, phòng trừ sâu bệnh.",
+        CurrentMonth IN {5, 6, 7},
+            "☀️ Nắng nóng khô hạn (Gió phơn Tây Nam): Tích trữ nước hồ chứa, tưới tiết kiệm cho cây màu, phòng chống cháy rừng.",
+        "🌾 Thu hoạch lúa Hè Thu sớm trước 31/08 để tránh đợt lũ đầu mùa."
+    )
+
+// 25. Khuyến nghị an toàn thi công công trình xây dựng
+[Construction Recommendation] =
+VAR Rain = [Total Rain]
+VAR SoilM = [Avg Soil Moisture]
+VAR Wind = [Avg Wind Speed]
+RETURN
+    SWITCH(
+        TRUE(),
+        Rain > 100 || Wind > 17.0,
+            "⛔ ĐÌNH CHỈ THI CÔNG: Nguy cơ đổ sập giàn giáo, sạt lở hố móng sâu, mất an toàn điện ngập nước.",
+        Rain > 40 || SoilM > 0.40,
+            "⚠️ HẠN CHẾ THI CÔNG: Tạm dừng đổ bê tông móng và công tác đào đắp đất, gia cố bờ bao công trình.",
+        "✅ THI CÔNG BÌNH THƯỜNG: Thời tiết thuận lợi cho các hạng mục kết cấu và hoàn thiện."
+    )
+
+// 26. Khuyến nghị điều tiết hồ chứa & An toàn tài nguyên nước
+[Water Recommendation] =
+VAR WBalance = [Avg Water Balance]
+VAR SMonth = SELECTEDVALUE('dim_date'[month], 11)
+RETURN
+    SWITCH(
+        TRUE(),
+        WBalance > 300,
+            "🌊 Cắt lũ hạ du: Chủ động mở cửa xả đáy đón lũ, duy trì mực nước đón lũ an toàn theo quy trình vận hành liên hồ chứa.",
+        WBalance < -5,
+            "☀️ Ứng phó hạn hán & xâm nhập mặn: Đóng cống ngăn mặn cửa sông, bơm chuyền nước vào vùng ngọt hóa, ưu tiên nước sinh hoạt người dân.",
+        "💧 Vận hành bình thường: Đảm bảo dung tích phòng lũ và tích nước phục vụ sản xuất vụ sau."
+    )

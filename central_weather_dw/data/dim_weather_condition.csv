@@ -1,0 +1,16 @@
+weather_condition_key,weather_code,condition_name_vi,condition_name_en,main_group,disaster_warning_flag,description
+1,0,Trời quang đãng,Clear sky,Nắng,0,Trời nắng trong, không mây
+2,1,Ít mây,Mainly clear,Nắng,0,Trời nắng nhẹ, mây thưa
+3,2,Mây rải rác,Partly cloudy,Mây,0,Mây che phủ một phần bầu trời
+4,3,Nhiều mây âm u,Overcast,Mây,0,Bầu trời phủ kín mây
+5,45,Sương mù,Fog,Sương mù,0,Tầm nhìn giảm dưới 1km
+6,51,Mưa phùn nhẹ,Light drizzle,Mưa,0,Mưa hạt nhỏ li ti, không gây ngập
+7,61,Mưa nhỏ,Slight rain,Mưa,0,Lượng mưa dưới 10mm/ngày
+8,63,Mưa vừa,Moderate rain,Mưa,0,Lượng mưa từ 16-50mm/ngày
+9,65,Mưa to,Heavy rain,Mưa lớn,1,Lượng mưa từ 51-100mm/ngày, nguy cơ ngập úng đô thị
+10,67,Mưa rất to,Very heavy rain,Mưa cực đoan,1,Lượng mưa trên 100mm/ngày, nguy cơ lũ quét và sạt lở
+11,80,Mưa rào dông,Rain showers,Giông lốc,1,Mưa rào kèm gió lốc cục bộ
+12,95,Dông sét mạnh,Thunderstorm,Dông lốc,1,Dông có sấm sét và gió giật mạnh
+13,96,Dông kèm mưa đá,Thunderstorm with slight hail,Dông lốc,1,Nguy hiểm cho hoa màu và mái nhà
+14,99,Áp thấp nhiệt đới,Tropical depression,Bão & Áp thấp,1,Gió cấp 6-7, mưa dồn dập diện rộng
+15,100,Bão nhiệt đới,Tropical storm / Typhoon,Bão & Áp thấp,1,Gió từ cấp 8 trở lên, biển động dữ dội, sóng lớn và ngập lụt

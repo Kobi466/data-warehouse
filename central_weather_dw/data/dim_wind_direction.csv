@@ -1,0 +1,17 @@
+direction_id,direction_code,name_en,name_vn,degree_min,degree_max,seasonal_pattern,impact_type
+1,N,North,Bắc,348.75,11.25,Gió mùa Đông Bắc,Không khí lạnh tràn về gây rét và mưa phùn
+2,NNE,North-Northeast,Bắc Đông Bắc,11.25,33.75,Gió mùa Đông Bắc,Gió lạnh mang hơi ẩm biển gây mưa
+3,NE,Northeast,Đông Bắc,33.75,56.25,Gió mùa Đông Bắc,Gió mùa chủ đạo mùa đông miền Trung, mưa to kéo dài
+4,ENE,East-Northeast,Đông Đông Bắc,56.25,78.75,Nhiễu động gió Đông,Tạo dải mây đối lưu gây mưa rất to ven biển
+5,E,East,Đông,78.75,101.25,Gió Đông trên cao,Tác nhân chính gây các trận mưa lũ lịch sử miền Trung
+6,ESE,East-Southeast,Đông Đông Nam,101.25,123.75,Gió biển,Đưa ẩm từ Biển Đông vào đất liền
+7,SE,Southeast,Đông Nam,123.75,146.25,Gió Đông Nam,Gió ấm ẩm mùa hè thu
+8,SSE,South-Southeast,Nam Đông Nam,146.25,168.75,Gió mùa Tây Nam yếu,Thời tiết chuyển tiếp oi bức
+9,S,South,Nam,168.75,191.25,Gió Nam,Gió nóng ẩm nhẹ
+10,SSW,South-Southwest,Nam Tây Nam,191.25,213.75,Gió phơn sớm,Bắt đầu xuất hiện hiệu ứng sườn khuất gió
+11,SW,Southwest,Tây Nam,213.75,236.25,Gió phơn Tây Nam (Gió Lào),Vượt dãy Trường Sơn gây nắng nóng khô rát gay gắt
+12,WSW,West-Southwest,Tây Tây Nam,236.25,258.75,Gió phơn Tây Nam,Độ ẩm giảm sâu dưới 35%, nguy cơ cháy rừng cao
+13,W,West,Tây,258.75,281.25,Gió Tây,Khô nóng vượt Trường Sơn
+14,WNW,West-Northwest,Tây Tây Bắc,281.25,303.75,Gió chuyển mùa,Thời tiết biến động
+15,NW,Northwest,Tây Bắc,303.75,326.25,Gió Tây Bắc,Gió lạnh khô đầu mùa đông
+16,NNW,North-Northwest,Bắc Tây Bắc,326.25,348.75,Gió mùa Đông Bắc tăng cường,Báo hiệu đợt không khí lạnh mạnh

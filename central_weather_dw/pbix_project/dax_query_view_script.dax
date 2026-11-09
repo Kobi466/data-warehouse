@@ -1,0 +1,184 @@
+/*
+================================================================================
+KỊCH BẢN TRUY VẤN DAX QUERY VIEW CHO POWER BI DESKTOP
+Dự án: Central Vietnam Weather & Disaster Data Warehouse (1999 - 2026)
+Cách dùng:
+1. Đảm bảo mô hình Power BI đã nạp đủ 11 bảng dữ liệu (đặc biệt là fact_wind, fact_temperature, fact_precipitation).
+2. Mở tab "DAX query view" (biểu tượng thứ 4 trên thanh bên trái).
+3. Copy TOÀN BỘ nội dung file này và dán đè vào ô soạn thảo DAX.
+4. Nhấn nút "Run" để kiểm tra tính toán.
+5. Nhấn nút "Update model with changes (26)" trên thanh công cụ để tự động nạp tất cả 26 measures vào mô hình!
+================================================================================
+*/
+
+DEFINE
+    -- =========================================================================
+    -- NHÓM 1: CÁC CHỈ SỐ KPI CHÍNH (CARD & SUMMARY METRICS)
+    -- =========================================================================
+
+    MEASURE 'fact_precipitation'[Avg Temperature] =
+        AVERAGE('fact_temperature'[temperature_2m])
+
+    MEASURE 'fact_precipitation'[Max Temperature] =
+        MAX('fact_temperature'[temperature_max])
+
+    MEASURE 'fact_precipitation'[Min Temperature] =
+        MIN('fact_temperature'[temperature_min])
+
+    MEASURE 'fact_precipitation'[Total Rain] =
+        SUM('fact_precipitation'[rain_mm])
+
+    MEASURE 'fact_precipitation'[Avg Rain Daily] =
+        AVERAGE('fact_precipitation'[rain_mm])
+
+    MEASURE 'fact_precipitation'[Avg Wind Speed] =
+        AVERAGE('fact_wind'[wind_speed_10m])
+
+    MEASURE 'fact_precipitation'[Max Wind Gust] =
+        MAX('fact_wind'[wind_gusts_10m])
+
+    MEASURE 'fact_precipitation'[Extreme Events Count] =
+        COUNTROWS('fact_extreme_events')
+
+    MEASURE 'fact_precipitation'[Total Disaster Damage (Billion VND)] =
+        SUM('fact_extreme_events'[estimated_damage_billion_vnd])
+
+    MEASURE 'fact_precipitation'[Total Affected Population] =
+        SUM('fact_extreme_events'[affected_population])
+
+
+    -- =========================================================================
+    -- NHÓM 2: PHÂN TÍCH KHÍ QUYỂN & TÀI NGUYÊN NƯỚC (ATMOSPHERIC & HYDROLOGY)
+    -- =========================================================================
+
+    MEASURE 'fact_precipitation'[Avg Relative Humidity] =
+        AVERAGE('fact_temperature'[relative_humidity_pct])
+
+    MEASURE 'fact_precipitation'[Avg Soil Moisture] =
+        AVERAGE('fact_temperature'[soil_moisture])
+
+    MEASURE 'fact_precipitation'[Avg Soil Saturation] =
+        AVERAGE('fact_precipitation'[soil_saturation_pct])
+
+    MEASURE 'fact_precipitation'[Total Evapotranspiration] =
+        SUM('fact_precipitation'[evapotranspiration])
+
+    MEASURE 'fact_precipitation'[Avg Water Balance] =
+        AVERAGE('fact_precipitation'[water_balance])
+
+    MEASURE 'fact_precipitation'[Avg Cloud Cover] =
+        AVERAGE('fact_atmospheric'[cloud_cover_pct])
+
+    MEASURE 'fact_precipitation'[Avg Cloud Low] =
+        AVERAGE('fact_atmospheric'[cloud_low_pct])
+
+    MEASURE 'fact_precipitation'[Avg Cloud High] =
+        AVERAGE('fact_atmospheric'[cloud_high_pct])
+
+    MEASURE 'fact_precipitation'[Avg Surface Pressure] =
+        AVERAGE('fact_atmospheric'[surface_pressure_hpa])
+
+    MEASURE 'fact_precipitation'[Avg Solar Radiation] =
+        AVERAGE('fact_solar_radiation'[shortwave_radiation])
+
+
+    -- =========================================================================
+    -- NHÓM 3: CẢNH BÁO BÃO LŨ & THIÊN TAI CỰC ĐOAN (DISASTER EARLY WARNING)
+    -- =========================================================================
+
+    MEASURE 'fact_precipitation'[Flood Warning Level] =
+        VAR TotalRain = [Total Rain]
+        VAR SoilSat = [Avg Soil Saturation]
+        RETURN
+            SWITCH(
+                TRUE(),
+                TotalRain >= 500 || SoilSat >= 98, "🚨 Báo động 3+ (Lũ đặc biệt lớn - Khẩn cấp)",
+                TotalRain >= 300 || SoilSat >= 90, "⚠️ Báo động 3 (Lũ lớn - Ngập sâu diện rộng)",
+                TotalRain >= 150 || SoilSat >= 75, "⚡ Báo động 2 (Lũ trung bình - Ngập vùng trũng)",
+                TotalRain >= 50, "📢 Báo động 1 (Lũ nhỏ - Bắt đầu tràn bãi)",
+                "✅ Bình thường (An toàn)"
+            )
+
+    MEASURE 'fact_precipitation'[Landslide Risk Level] =
+        VAR Saturation = [Avg Soil Saturation]
+        VAR RainDaily = [Avg Rain Daily]
+        RETURN
+            SWITCH(
+                TRUE(),
+                Saturation >= 95 && RainDaily >= 200, "🔴 Nguy cơ sạt lở RẤT CAO (Sơ tán khẩn cấp)",
+                Saturation >= 85 && RainDaily >= 100, "🟠 Nguy cơ sạt lở CAO (Cảnh giác cao độ)",
+                Saturation >= 70 && RainDaily >= 50, "🟡 Nguy cơ sạt lở TRUNG BÌNH (Theo dõi sườn dốc)",
+                "🟢 Nguy cơ THẤP"
+            )
+
+    MEASURE 'fact_precipitation'[Marine Safety Status] =
+        VAR MaxWind = [Max Wind Gust]
+        RETURN
+            SWITCH(
+                TRUE(),
+                MaxWind >= 32.7, "⛔ CẤM BIỂN TUYỆT ĐỐI (Gió cấp 12+ cuồng phong)",
+                MaxWind >= 24.5, "⛔ CẤM TÀU THUYỀN RA KHƠI (Gió cấp 10-11 bão mạnh)",
+                MaxWind >= 17.2, "⚠️ NGUY HIỂM (Gió cấp 8-9, biển động rất mạnh)",
+                MaxWind >= 10.8, "⚡ CẢNH GIÁC (Gió cấp 6-7, biển động, tàu nhỏ ở lại bến)",
+                "✅ AN TOÀN (Tàu thuyền hoạt động bình thường)"
+            )
+
+
+    -- =========================================================================
+    -- NHÓM 4: KHUYẾN NGHỊ SINH KẾ NGƯỜI DÂN MIỀN TRUNG (PRESCRIPTIVE ANALYTICS)
+    -- =========================================================================
+
+    MEASURE 'fact_precipitation'[Crop Recommendation] =
+        VAR CurrentMonth = SELECTEDVALUE('dim_date'[month], 11)
+        VAR WaterBal = [Avg Water Balance]
+        VAR SoilMoist = [Avg Soil Moisture]
+        RETURN
+            SWITCH(
+                TRUE(),
+                CurrentMonth IN {9, 10, 11},
+                    "⚠️ Cao điểm bão lũ: Thu hoạch dứt điểm vụ Hè Thu, KHÔNG gieo cấy lúa vùng trũng thấp ven sông, chuyển sang chăn thả gia súc lên đồi cao.",
+                CurrentMonth IN {12, 1},
+                    "🌱 Xuống giống vụ Đông Xuân: Tranh thủ phù sa sau lũ, gieo cấy giống lúa ngắn ngày chịu rét, kiểm tra hệ thống tiêu úng nội đồng.",
+                CurrentMonth IN {2, 3, 4},
+                    "🌾 Chăm sóc lúa Đông Xuân: Bón đón đòng, thời tiết ấm dần, điều tiết nước tưới dưỡng hạt, phòng trừ sâu bệnh.",
+                CurrentMonth IN {5, 6, 7},
+                    "☀️ Nắng nóng khô hạn (Gió phơn Tây Nam): Tích trữ nước hồ chứa, tưới tiết kiệm cho cây màu, phòng chống cháy rừng.",
+                "🌾 Thu hoạch lúa Hè Thu sớm trước 31/08 để tránh đợt lũ đầu mùa."
+            )
+
+    MEASURE 'fact_precipitation'[Construction Recommendation] =
+        VAR Rain = [Total Rain]
+        VAR SoilM = [Avg Soil Moisture]
+        VAR Wind = [Avg Wind Speed]
+        RETURN
+            SWITCH(
+                TRUE(),
+                Rain > 100 || Wind > 17.0,
+                    "⛔ ĐÌNH CHỈ THI CÔNG: Nguy cơ đổ sập giàn giáo, sạt lở hố móng sâu, mất an toàn điện ngập nước.",
+                Rain > 40 || SoilM > 0.40,
+                    "⚠️ HẠN CHẾ THI CÔNG: Tạm dừng đổ bê tông móng và công tác đào đắp đất, gia cố bờ bao công trình.",
+                "✅ THI CÔNG BÌNH THƯỜNG: Thời tiết thuận lợi cho các hạng mục kết cấu và hoàn thiện."
+            )
+
+    MEASURE 'fact_precipitation'[Water Recommendation] =
+        VAR WBalance = [Avg Water Balance]
+        VAR SMonth = SELECTEDVALUE('dim_date'[month], 11)
+        RETURN
+            SWITCH(
+                TRUE(),
+                WBalance > 300,
+                    "🌊 Cắt lũ hạ du: Chủ động mở cửa xả đáy đón lũ, duy trì mực nước đón lũ an toàn theo quy trình vận hành liên hồ chứa.",
+                WBalance < -5,
+                    "☀️ Ứng phó hạn hán & xâm nhập mặn: Đóng cống ngăn mặn cửa sông, bơm chuyền nước vào vùng ngọt hóa, ưu tiên nước sinh hoạt người dân.",
+                "💧 Vận hành bình thường: Đảm bảo dung tích phòng lũ và tích nước phục vụ sản xuất vụ sau."
+            )
+
+EVALUATE
+    ROW(
+        "KiemTra_NhietDo_TB", [Avg Temperature],
+        "KiemTra_TongLuongMua", [Total Rain],
+        "KiemTra_GioTB", [Avg Wind Speed],
+        "KiemTra_CanBangNuoc", [Avg Water Balance],
+        "KiemTra_SoSuKienThienTai", [Extreme Events Count],
+        "KiemTra_CapBaoDongLu", [Flood Warning Level]
+    )
