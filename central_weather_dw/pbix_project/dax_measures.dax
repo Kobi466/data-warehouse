@@ -1,6 +1,6 @@
 /*
 ================================================================================
-BỘ ĐO LƯỜNG DAX (DAX MEASURES) HOÀN CHỈNH CHO KHO DỮ LIỆU MIỀN TRUNG
+BỘ ĐO LƯỜNG DAX (DAX MEASURES) HOÀN CHỈNH - ĐÃ SỬA LỖI CHO KHO DỮ LIỆU MIỀN TRUNG
 Dự án: Central Vietnam Weather & Disaster Data Warehouse (1999 - 2026)
 Mô hình: Fact Constellation (Galaxy Schema)
 ================================================================================
@@ -38,15 +38,23 @@ AVERAGE('fact_wind'[wind_speed_10m])
 [Max Wind Gust] =
 MAX('fact_wind'[wind_gusts_10m])
 
-// 8. Tổng số sự kiện thiên tai cực đoan
-[Extreme Events Count] =
-COUNTROWS('fact_extreme_events')
+// 8. Tốc độ gió bão cực đại (km/h) - Dùng cho Card Trang 2 (Tránh bị tính SUM ra 2.000 km/h)
+[Max Storm Wind Speed] =
+MAX('fact_extreme_events'[max_wind_speed_kmh])
 
-// 9. Tổng thiệt hại kinh tế ước tính do thiên tai (Tỷ VNĐ)
+// 9. Mưa 24h đỉnh kỷ lục (mm) - Dùng cho Card Trang 2 (Tránh bị tính SUM ra 14.000 mm)
+[Max Peak Rainfall 24h] =
+MAX('fact_extreme_events'[peak_rainfall_24h_mm])
+
+// 10. Tổng số sự kiện thiên tai cực đoan (Đã bọc COALESCE tránh hiển thị blank '--')
+[Extreme Events Count] =
+COALESCE(COUNTROWS('fact_extreme_events'), 0)
+
+// 11. Tổng thiệt hại kinh tế ước tính do thiên tai (Tỷ VNĐ)
 [Total Disaster Damage (Billion VND)] =
 SUM('fact_extreme_events'[estimated_damage_billion_vnd])
 
-// 10. Tổng số lượt người dân bị ảnh hưởng bởi thiên tai
+// 12. Tổng số lượt người dân bị ảnh hưởng bởi thiên tai
 [Total Affected Population] =
 SUM('fact_extreme_events'[affected_population])
 
@@ -55,44 +63,44 @@ SUM('fact_extreme_events'[affected_population])
 -- NHÓM 2: PHÂN TÍCH KHÍ QUYỂN & TÀI NGUYÊN NƯỚC (ATMOSPHERIC & HYDROLOGY)
 -- =============================================================================
 
-// 11. Độ ẩm tương đối trung bình (%)
+// 13. Độ ẩm tương đối trung bình (%)
 [Avg Relative Humidity] =
 AVERAGE('fact_temperature'[relative_humidity_pct])
 
-// 12. Độ ẩm đất trung bình (m³/m³)
+// 14. Độ ẩm đất trung bình (m³/m³)
 [Avg Soil Moisture] =
 AVERAGE('fact_temperature'[soil_moisture])
 
-// 13. Độ bão hòa đất trung bình (%)
+// 15. Độ bão hòa đất trung bình (%)
 [Avg Soil Saturation] =
 AVERAGE('fact_precipitation'[soil_saturation_pct])
 
-// 14. Tổng lượng bốc thoát hơi nước (mm)
+// 16. Tổng lượng bốc thoát hơi nước (mm)
 [Total Evapotranspiration] =
 SUM('fact_precipitation'[evapotranspiration])
 
-// 15. Cán cân nước trung bình (Water Balance = Rain - Evapotranspiration)
+// 17. Cán cân nước trung bình (Water Balance = Rain - Evapotranspiration)
 // > 0: Thừa nước (nguy cơ ngập); = 0: Cân bằng; < 0: Thiếu nước (nguy cơ hạn hán)
 [Avg Water Balance] =
 AVERAGE('fact_precipitation'[water_balance])
 
-// 16. Độ che phủ mây trung bình (%)
+// 18. Độ che phủ mây trung bình (%)
 [Avg Cloud Cover] =
 AVERAGE('fact_atmospheric'[cloud_cover_pct])
 
-// 17. Độ che phủ mây tầng thấp (%)
+// 19. Độ che phủ mây tầng thấp (%)
 [Avg Cloud Low] =
 AVERAGE('fact_atmospheric'[cloud_low_pct])
 
-// 18. Độ che phủ mây tầng cao (%)
+// 20. Độ che phủ mây tầng cao (%)
 [Avg Cloud High] =
 AVERAGE('fact_atmospheric'[cloud_high_pct])
 
-// 19. Áp suất khí quyển trung bình (hPa)
+// 21. Áp suất khí quyển trung bình (hPa)
 [Avg Surface Pressure] =
 AVERAGE('fact_atmospheric'[surface_pressure_hpa])
 
-// 20. Bức xạ mặt trời trung bình (MJ/m²)
+// 22. Bức xạ mặt trời trung bình (MJ/m²)
 [Avg Solar Radiation] =
 AVERAGE('fact_solar_radiation'[shortwave_radiation])
 
@@ -101,35 +109,34 @@ AVERAGE('fact_solar_radiation'[shortwave_radiation])
 -- NHÓM 3: CẢNH BÁO BÃO LŨ & THIÊN TAI CỰC ĐOAN (DISASTER EARLY WARNING)
 -- =============================================================================
 
-// 21. Cấp độ cảnh báo lũ (Dựa trên lượng mưa tích lũy và mực nước)
+// 23. Cấp độ cảnh báo lũ (Dựa trên lượng mưa trung bình ngày hoặc độ ẩm đất)
 [Flood Warning Level] =
-VAR TotalRain = [Total Rain]
+VAR RainDaily = [Avg Rain Daily]
 VAR SoilSat = [Avg Soil Saturation]
 RETURN
     SWITCH(
         TRUE(),
-        TotalRain >= 500 || SoilSat >= 98, "🚨 Báo động 3+ (Lũ đặc biệt lớn - Khẩn cấp)",
-        TotalRain >= 300 || SoilSat >= 90, "⚠️ Báo động 3 (Lũ lớn - Ngập sâu diện rộng)",
-        TotalRain >= 150 || SoilSat >= 75, "⚡ Báo động 2 (Lũ trung bình - Ngập vùng trũng)",
-        TotalRain >= 50, "📢 Báo động 1 (Lũ nhỏ - Bắt đầu tràn bãi)",
+        RainDaily >= 150 || SoilSat >= 95, "🚨 Báo động 3+ (Lũ đặc biệt lớn - Khẩn cấp)",
+        RainDaily >= 80  || SoilSat >= 85, "⚠️ Báo động 3 (Lũ lớn - Ngập sâu diện rộng)",
+        RainDaily >= 40  || SoilSat >= 75, "⚡ Báo động 2 (Lũ trung bình - Ngập vùng trũng)",
+        RainDaily >= 15  || SoilSat >= 60, "📢 Báo động 1 (Lũ nhỏ - Bắt đầu tràn bãi)",
         "✅ Bình thường (An toàn)"
     )
 
-// 22. Cảnh báo sạt lở đất sườn dốc (Landslide Warning)
-// Kết hợp độ bão hòa đất (Soil Saturation) và lượng mưa tích lũy
+// 24. Cảnh báo sạt lở đất sườn dốc (Landslide Warning)
 [Landslide Risk Level] =
 VAR Saturation = [Avg Soil Saturation]
 VAR RainDaily = [Avg Rain Daily]
 RETURN
     SWITCH(
         TRUE(),
-        Saturation >= 95 && RainDaily >= 200, "🔴 Nguy cơ sạt lở RẤT CAO (Sơ tán khẩn cấp)",
-        Saturation >= 85 && RainDaily >= 100, "🟠 Nguy cơ sạt lở CAO (Cảnh giác cao độ)",
-        Saturation >= 70 && RainDaily >= 50, "🟡 Nguy cơ sạt lở TRUNG BÌNH (Theo dõi sườn dốc)",
+        Saturation >= 90 && RainDaily >= 100, "🔴 Nguy cơ sạt lở RẤT CAO (Sơ tán khẩn cấp)",
+        Saturation >= 80 && RainDaily >= 50,  "🟠 Nguy cơ sạt lở CAO (Cảnh giác cao độ)",
+        Saturation >= 65 && RainDaily >= 25,  "🟡 Nguy cơ sạt lở TRUNG BÌNH (Theo dõi sườn dốc)",
         "🟢 Nguy cơ THẤP"
     )
 
-// 23. Chỉ số an toàn biển cho tàu thuyền đánh bắt hải sản
+// 25. Chỉ số an toàn biển cho tàu thuyền đánh bắt hải sản
 [Marine Safety Status] =
 VAR MaxWind = [Max Wind Gust]
 RETURN
@@ -147,50 +154,52 @@ RETURN
 -- NHÓM 4: KHUYẾN NGHỊ SINH KẾ NGƯỜI DÂN MIỀN TRUNG (PRESCRIPTIVE ANALYTICS)
 -- =============================================================================
 
-// 24. Khuyến nghị thời vụ nông nghiệp theo tháng và rủi ro ngập lụt
+// 26. Khuyến nghị thời vụ nông nghiệp (Linh hoạt theo tháng hoặc mùa đang lọc)
 [Crop Recommendation] =
-VAR CurrentMonth = SELECTEDVALUE('dim_date'[month], 11)
-VAR WaterBal = [Avg Water Balance]
-VAR SoilMoist = [Avg Soil Moisture]
+VAR CurrentMonth = SELECTEDVALUE('dim_date'[month], 0)
+VAR CurrentSeason = SELECTEDVALUE('dim_date'[season], "")
 RETURN
     SWITCH(
         TRUE(),
-        CurrentMonth IN {9, 10, 11},
-            "⚠️ Cao điểm bão lũ: Thu hoạch dứt điểm vụ Hè Thu, KHÔNG gieo cấy lúa vùng trũng thấp ven sông, chuyển sang chăn thả gia súc lên đồi cao.",
-        CurrentMonth IN {12, 1},
+        CurrentMonth IN {9, 10, 11} || CurrentSeason = "Mùa mưa lũ cao điểm",
+            "⚠️ Cao điểm bão lũ: Thu hoạch dứt điểm vụ Hè Thu, KHÔNG gieo cấy lúa vùng trũng thấp ven sông, chuyển đàn gia súc lên đồi cao.",
+        CurrentMonth IN {12, 1} || CurrentSeason = "Mùa đông rét" || CurrentSeason = "Mùa đông lạnh",
             "🌱 Xuống giống vụ Đông Xuân: Tranh thủ phù sa sau lũ, gieo cấy giống lúa ngắn ngày chịu rét, kiểm tra hệ thống tiêu úng nội đồng.",
-        CurrentMonth IN {2, 3, 4},
-            "🌾 Chăm sóc lúa Đông Xuân: Bón đón đòng, thời tiết ấm dần, điều tiết nước tưới dưỡng hạt, phòng trừ sâu bệnh.",
-        CurrentMonth IN {5, 6, 7},
+        CurrentMonth IN {2, 3, 4} || CurrentSeason = "Mùa xuân ấm",
+            "🌾 Chăm sóc lúa Đông Xuân: Bón đón đòng, thời tiết ấm dần, điều tiết nước tưới dưỡng hạt, phòng trừ sâu bệnh đạo ôn.",
+        CurrentMonth IN {5, 6, 7} || CurrentSeason = "Mùa nắng nóng phơn",
             "☀️ Nắng nóng khô hạn (Gió phơn Tây Nam): Tích trữ nước hồ chứa, tưới tiết kiệm cho cây màu, phòng chống cháy rừng.",
-        "🌾 Thu hoạch lúa Hè Thu sớm trước 31/08 để tránh đợt lũ đầu mùa."
+        CurrentMonth = 8 || CurrentSeason = "Mùa mưa bão đầu mùa",
+            "🌾 Thu hoạch lúa Hè Thu sớm trước 31/08 để tránh đợt lũ tiểu mãn và bão đầu mùa.",
+        "📋 Theo dõi lịch mùa vụ: Chọn một tháng hoặc mùa cụ thể trên bộ lọc để xem khuyến nghị chi tiết cho từng thời điểm."
     )
 
-// 25. Khuyến nghị an toàn thi công công trình xây dựng
+// 27. Khuyến nghị an toàn thi công công trình xây dựng (Đã sửa dùng lượng mưa ngày để không bị luôn ĐÌNH CHỈ)
 [Construction Recommendation] =
-VAR Rain = [Total Rain]
+VAR RainDaily = [Avg Rain Daily]
 VAR SoilM = [Avg Soil Moisture]
 VAR Wind = [Avg Wind Speed]
 RETURN
     SWITCH(
         TRUE(),
-        Rain > 100 || Wind > 17.0,
-            "⛔ ĐÌNH CHỈ THI CÔNG: Nguy cơ đổ sập giàn giáo, sạt lở hố móng sâu, mất an toàn điện ngập nước.",
-        Rain > 40 || SoilM > 0.40,
-            "⚠️ HẠN CHẾ THI CÔNG: Tạm dừng đổ bê tông móng và công tác đào đắp đất, gia cố bờ bao công trình.",
-        "✅ THI CÔNG BÌNH THƯỜNG: Thời tiết thuận lợi cho các hạng mục kết cấu và hoàn thiện."
+        RainDaily >= 50 || Wind >= 15.0,
+            "⛔ ĐÌNH CHỈ THI CÔNG: Mưa lớn dồn dập / gió mạnh, nguy cơ đổ sập giàn giáo, sạt lở hố móng sâu, mất an toàn điện.",
+        RainDaily >= 20 || SoilM >= 0.40,
+            "⚠️ HẠN CHẾ THI CÔNG: Tạm dừng đổ bê tông móng và công tác đào đắp đất, che chắn vật liệu, gia cố bờ bao công trình.",
+        "✅ THI CÔNG BÌNH THƯỜNG: Thời tiết thuận lợi cho các hạng mục kết cấu bê tông và hoàn thiện ngoài trời."
     )
 
-// 26. Khuyến nghị điều tiết hồ chứa & An toàn tài nguyên nước
+// 28. Khuyến nghị điều tiết hồ chứa & An toàn tài nguyên nước (Đã điều chỉnh ngưỡng phù hợp)
 [Water Recommendation] =
 VAR WBalance = [Avg Water Balance]
-VAR SMonth = SELECTEDVALUE('dim_date'[month], 11)
+VAR SMonth = SELECTEDVALUE('dim_date'[month], 0)
+VAR SSeason = SELECTEDVALUE('dim_date'[season], "")
 RETURN
     SWITCH(
         TRUE(),
-        WBalance > 300,
-            "🌊 Cắt lũ hạ du: Chủ động mở cửa xả đáy đón lũ, duy trì mực nước đón lũ an toàn theo quy trình vận hành liên hồ chứa.",
-        WBalance < -5,
+        WBalance >= 40 || SMonth IN {9, 10, 11} || SSeason = "Mùa mưa lũ cao điểm",
+            "🌊 Cắt lũ hạ du: Chủ động mở cửa xả đáy đón lũ, hạ mực nước đón lũ theo quy trình vận hành liên hồ chứa liên tỉnh.",
+        WBalance <= 0 || SMonth IN {5, 6, 7} || SSeason = "Mùa nắng nóng phơn",
             "☀️ Ứng phó hạn hán & xâm nhập mặn: Đóng cống ngăn mặn cửa sông, bơm chuyền nước vào vùng ngọt hóa, ưu tiên nước sinh hoạt người dân.",
         "💧 Vận hành bình thường: Đảm bảo dung tích phòng lũ và tích nước phục vụ sản xuất vụ sau."
     )

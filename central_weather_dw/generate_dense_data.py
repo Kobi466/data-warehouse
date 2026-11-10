@@ -209,6 +209,8 @@ def generate_all_facts(date_rows):
                 temp_2m = round(b_temp - 3.5 + random.uniform(-0.5, 0.5), 1)
                 temp_max = round(temp_2m + 1.8, 1)
                 temp_min = round(temp_2m - 1.5, 1)
+                temp_soil = round(temp_2m - 0.8, 1)
+                apparent_temp = round(temp_2m - (w_speed * 0.25), 1)
                 rh = random.randint(95, 100)
                 soil_moist = round(0.44 + (soil_sat / 100.0) * 0.06, 2)
                 evap = round(random.uniform(0.8, 1.5), 1)
